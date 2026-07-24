@@ -1,0 +1,21 @@
+{
+  "name": "survos/exhibit-bundle",
+  "description": "Symfony integration for authoring and publishing Story Contract exhibit stories.",
+  "type": "symfony-bundle",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.2",
+    "symfony/framework-bundle": "^6.4 || ^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Survos\\ExhibitBundle\\": "src/"
+    }
+  },
+  "extra": {
+    "symfony": {
+      "allow-contrib": true
+    }
+  }
+}
+
