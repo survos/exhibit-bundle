@@ -29,25 +29,30 @@ final class StoryController
     }
 
     /**
-     * List every known story, condensed to list-view fields -- no blocks/
-     * resources, see show() for the full document. Small enough (a handful
-     * of tours today) to return uncached and unpaginated.
+     * List every known story -- full story.v1 documents, not condensed
+     * summaries, so a consumer never needs a second per-story fetch. Real
+     * story counts are small enough (a handful of tours today) that this is
+     * simpler than pagination, not a shortcut around it.
+     *
+     * Response shape matches what survos/js-twig-bundle's DbUtilities.fetchTable()
+     * (assets/src/lib/dexieDatabase.js) already expects -- bare `member`/`view.next`
+     * keys (API Platform's plain JSON collection shape, not full JSON-LD/hydra:*
+     * keys) -- so rut's existing <twig:dexie store="..." url="/stories"> wiring
+     * can sync this endpoint with no new client code. `view.next` is always null:
+     * there's no pagination yet, deliberately, until story counts stop being small.
      */
     #[Route('', name: 'exhibit_story_list', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        $stories = [];
-        foreach ($this->stories->findAll() as $story) {
-            $stories[] = [
-                'id' => $story['id'],
-                'title' => $story['title'] ?? null,
-                'subtitle' => $story['subtitle'] ?? null,
-                'dek' => $story['dek'] ?? null,
-                'blockCount' => \count($story['blocks'] ?? []),
-            ];
-        }
+        $stories = \iterator_to_array($this->stories->findAll(), false);
 
-        return new JsonResponse(['stories' => $stories]);
+        return new JsonResponse([
+            'member' => $stories,
+            'totalItems' => \count($stories),
+            'view' => [
+                'next' => null,
+            ],
+        ]);
     }
 
     /** The full story.v1 document -- blocks, resources, connections, projections, all of it. */
