@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Survos\ExhibitBundle;
 
+use Survos\ExhibitBundle\Service\SiteFinder;
 use Survos\ExhibitBundle\Service\StoryFinder;
 use Survos\Kit\AbstractSurvosBundle;
 use Survos\Kit\SurvosKitBundle;
@@ -39,6 +40,11 @@ final class SurvosExhibitBundle extends AbstractSurvosBundle
 
         $container->services()
             ->set(StoryFinder::class)
+            ->autowire()
+            ->autoconfigure()
+            ->public();
+        $container->services()
+            ->set(SiteFinder::class)
             ->autowire()
             ->autoconfigure()
             ->public();

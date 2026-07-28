@@ -30,22 +30,15 @@ final class StoryFinder
     public function findAll(): iterable
     {
         foreach ($this->folioRegistry->datasets(all: true) as $dataset) {
-            // sourceFile()'s $core param is really just "which <core>.jsonl under norm/" --
-            // 'story' works the same way 'obj' does for row content, even though a story
-            // isn't a row core. There's no _folio-enrichment stage for stories (nothing
-            // AI-claims-enriches a story document), so the "enriched" half of sourceFile()
-            // always misses and it falls through to the plain norm/story.jsonl check, which
-            // is exactly the lookup this needs.
-            $storyFile = $this->folioRegistry->sourceFile($dataset, 'story');
-            if ($storyFile === null) {
-                continue;
-            }
+            yield from $this->readStoryFile($dataset);
+        }
+    }
 
-            foreach (JsonlReader::open($storyFile) as $story) {
-                if (\is_array($story) && isset($story['id'])) {
-                    yield $story;
-                }
-            }
+    /** @return iterable<array<string, mixed>> raw story.v1 documents belonging to one dataset (one "site") */
+    public function findForDataset(string $datasetKey): iterable
+    {
+        foreach ($this->folioRegistry->datasets($datasetKey) as $dataset) {
+            yield from $this->readStoryFile($dataset);
         }
     }
 
@@ -59,5 +52,25 @@ final class StoryFinder
         }
 
         return null;
+    }
+
+    /** @return iterable<array<string, mixed>> */
+    private function readStoryFile(\Survos\DatasetBundle\Entity\DatasetInfo $dataset): iterable
+    {
+        // sourceFile()'s $core param is really just "which <core>.jsonl under norm/" -- 'story'
+        // works the same way 'obj' does for row content, even though a story isn't a row core.
+        // There's no _folio-enrichment stage for stories (nothing AI-claims-enriches a story
+        // document), so the "enriched" half of sourceFile() always misses and it falls through
+        // to the plain norm/story.jsonl check, which is exactly the lookup this needs.
+        $storyFile = $this->folioRegistry->sourceFile($dataset, 'story');
+        if ($storyFile === null) {
+            return;
+        }
+
+        foreach (JsonlReader::open($storyFile) as $story) {
+            if (\is_array($story) && isset($story['id'])) {
+                yield $story;
+            }
+        }
     }
 }
