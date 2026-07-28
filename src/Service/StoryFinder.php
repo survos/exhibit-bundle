@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Survos\ExhibitBundle\Service;
 
+use Survos\ExhibitBundle\Dto\StoryDto;
 use Survos\FolioBundle\Service\FolioRegistry;
 use Survos\JsonlBundle\IO\JsonlReader;
 
@@ -26,7 +27,7 @@ final class StoryFinder
     ) {
     }
 
-    /** @return iterable<array<string, mixed>> raw story.v1 documents */
+    /** @return iterable<StoryDto> every story, imported straight from each dataset's norm/story.jsonl */
     public function findAll(): iterable
     {
         foreach ($this->folioRegistry->datasets(all: true) as $dataset) {
@@ -34,7 +35,7 @@ final class StoryFinder
         }
     }
 
-    /** @return iterable<array<string, mixed>> raw story.v1 documents belonging to one dataset (one "site") */
+    /** @return iterable<StoryDto> stories belonging to one dataset (one "site") */
     public function findForDataset(string $datasetKey): iterable
     {
         foreach ($this->folioRegistry->datasets($datasetKey) as $dataset) {
@@ -42,11 +43,10 @@ final class StoryFinder
         }
     }
 
-    /** @return array<string, mixed>|null */
-    public function find(string $id): ?array
+    public function find(string $id): ?StoryDto
     {
         foreach ($this->findAll() as $story) {
-            if ($story['id'] === $id) {
+            if ($story->getId() === $id) {
                 return $story;
             }
         }
@@ -54,7 +54,22 @@ final class StoryFinder
         return null;
     }
 
-    /** @return iterable<array<string, mixed>> */
+    /** Every story, across every dataset, that has a stop referencing $ref -- the object-page backlink lookup. */
+    public function findStopsForRef(string $ref): array
+    {
+        $stops = [];
+        foreach ($this->findAll() as $story) {
+            foreach ($story->getBookmarkStops() as $stop) {
+                if ($stop->ref === $ref) {
+                    $stops[] = $stop;
+                }
+            }
+        }
+
+        return $stops;
+    }
+
+    /** @return iterable<StoryDto> */
     private function readStoryFile(\Survos\DatasetBundle\Entity\DatasetInfo $dataset): iterable
     {
         // sourceFile()'s $core param is really just "which <core>.jsonl under norm/" -- 'story'
@@ -69,7 +84,7 @@ final class StoryFinder
 
         foreach (JsonlReader::open($storyFile) as $story) {
             if (\is_array($story) && isset($story['id'])) {
-                yield $story;
+                yield StoryDto::fromArray($story);
             }
         }
     }
