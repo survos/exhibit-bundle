@@ -69,8 +69,14 @@ final class StoryFinder
         return $stops;
     }
 
-    /** @return iterable<StoryDto> */
-    private function readStoryFile(\Survos\DatasetBundle\Entity\DatasetInfo $dataset): iterable
+    /**
+     * $dataset is whatever FolioRegistry::datasets() returns (dataset-bundle's DatasetInfo, on the
+     * producer). Untyped here so this bundle does not require dataset-bundle: reader apps load it
+     * without the registry, and datasets() throws there before this is reached.
+     *
+     * @return iterable<StoryDto>
+     */
+    private function readStoryFile(object $dataset): iterable
     {
         // sourceFile()'s $core param is really just "which <core>.jsonl under norm/" -- 'story'
         // works the same way 'obj' does for row content, even though a story isn't a row core.

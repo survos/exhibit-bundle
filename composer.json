@@ -7,7 +7,7 @@
     "php": ">=8.2",
     "symfony/framework-bundle": "^6.4 || ^7.0 || ^8.0",
     "survos/kit-bundle": "^2.5",
-    "survos/dataset-bundle": "^2.5",
+    "survos/data-contracts": "^2.36",
     "survos/folio-bundle": "^2.5",
     "survos/jsonl-bundle": "^2.5"
   },
