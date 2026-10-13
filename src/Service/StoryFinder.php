@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Survos\ExhibitBundle\Service;
 
+use Survos\ExhibitBundle\Contract\StorySourceInterface;
 use Survos\ExhibitBundle\Dto\StoryDto;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
- * Finds published story.v1-shaped documents across every local folio with a `story` core
+ * Finds story.v1 documents across every StorySourceInterface: the bundle's FolioStorySource plus
+ * whatever the application contributes (zm: bookmark folders).
+ *
+ * Folio stories: published story.v1-shaped documents across every local folio with a `story` core
  * (see StoryIndex: Harvest's provider:curatescape:story-normalize writes them, folio:build
  * ingests them as ordinary rows) -- the canonical artifact, never a projection; see
  * tacman/story-contract's own design rule.
@@ -19,16 +24,20 @@ use Survos\ExhibitBundle\Dto\StoryDto;
  */
 final class StoryFinder
 {
+    /** @param iterable<StorySourceInterface> $sources */
     public function __construct(
         private readonly StoryIndex $index,
+        #[AutowireIterator(StorySourceInterface::TAG)] private readonly iterable $sources,
     ) {
     }
 
-    /** @return iterable<StoryDto> every story, from each folio's story core */
+    /** @return iterable<StoryDto> every listed story, from every source */
     public function findAll(): iterable
     {
-        foreach ($this->index->folioCodes() as $folioCode) {
-            yield from $this->findForDataset($folioCode);
+        foreach ($this->sources as $source) {
+            foreach ($source->stories() as $story) {
+                yield StoryDto::fromArray($story);
+            }
         }
     }
 
@@ -43,11 +52,12 @@ final class StoryFinder
         }
     }
 
+    /** One story by id from whichever source has it, including unlisted ones the viewer may see. */
     public function find(string $id): ?StoryDto
     {
-        foreach ($this->findAll() as $story) {
-            if ($story->getId() === $id) {
-                return $story;
+        foreach ($this->sources as $source) {
+            if (($story = $source->story($id)) !== null) {
+                return StoryDto::fromArray($story);
             }
         }
 

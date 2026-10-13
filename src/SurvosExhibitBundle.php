@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Survos\ExhibitBundle;
 
+use Survos\ExhibitBundle\Contract\StorySourceInterface;
+use Survos\ExhibitBundle\Service\FolioStorySource;
 use Survos\ExhibitBundle\Service\SiteFinder;
 use Survos\ExhibitBundle\Service\StoryFinder;
 use Survos\ExhibitBundle\Service\StoryIndex;
@@ -30,6 +32,7 @@ final class SurvosExhibitBundle extends AbstractSurvosBundle
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
+        $container->registerForAutoconfiguration(StorySourceInterface::class)->addTag(StorySourceInterface::TAG);
         $this->addRouteLoaderCompilerPass($container);
     }
 
@@ -41,6 +44,10 @@ final class SurvosExhibitBundle extends AbstractSurvosBundle
 
         $container->services()
             ->set(StoryIndex::class)
+            ->autowire()
+            ->autoconfigure();
+        $container->services()
+            ->set(FolioStorySource::class)
             ->autowire()
             ->autoconfigure();
         $container->services()
