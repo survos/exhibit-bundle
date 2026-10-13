@@ -5,41 +5,41 @@ declare(strict_types=1);
 namespace Survos\ExhibitBundle\Service;
 
 use Survos\ExhibitBundle\Dto\StoryDto;
-use Survos\FolioBundle\Service\FolioRegistry;
-use Survos\JsonlBundle\IO\JsonlReader;
 
 /**
- * Finds published story.v1-shaped documents across every dataset that has one.
- * Currently that means datasets with a norm/story.jsonl (see md's
- * provider:curatescape:story-normalize -- the canonical artifact, never a
- * projection; see tacman/story-contract's own design rule).
+ * Finds published story.v1-shaped documents across every local folio with a `story` core
+ * (see StoryIndex: Harvest's provider:curatescape:story-normalize writes them, folio:build
+ * ingests them as ordinary rows) -- the canonical artifact, never a projection; see
+ * tacman/story-contract's own design rule.
  *
- * No caching, no index: real story counts are small (a handful of tours per
- * dataset today), so a full scan on every call is the right amount of
- * engineering -- see survos-sites/sos#6's "no fancy relations, these are
- * small" framing, which applies here just as much as it does to rut's own
- * client-side Dexie cache.
+ * No index beyond StoryIndex's which-folios cache: real story counts are small (a handful of
+ * tours per dataset today), so reading every story-bearing folio per call is the right amount
+ * of engineering -- see survos-sites/sos#6's "no fancy relations, these are small" framing,
+ * which applies here just as much as it does to rut's own client-side Dexie cache.
  */
 final class StoryFinder
 {
     public function __construct(
-        private readonly FolioRegistry $folioRegistry,
+        private readonly StoryIndex $index,
     ) {
     }
 
-    /** @return iterable<StoryDto> every story, imported straight from each dataset's norm/story.jsonl */
+    /** @return iterable<StoryDto> every story, from each folio's story core */
     public function findAll(): iterable
     {
-        foreach ($this->folioRegistry->datasets(all: true) as $dataset) {
-            yield from $this->readStoryFile($dataset);
+        foreach ($this->index->folioCodes() as $folioCode) {
+            yield from $this->findForDataset($folioCode);
         }
     }
 
-    /** @return iterable<StoryDto> stories belonging to one dataset (one "site") */
+    /** @return iterable<StoryDto> stories belonging to one folio (one "site") */
     public function findForDataset(string $datasetKey): iterable
     {
-        foreach ($this->folioRegistry->datasets($datasetKey) as $dataset) {
-            yield from $this->readStoryFile($dataset);
+        if (!\in_array($datasetKey, $this->index->folioCodes(), true)) {
+            return;
+        }
+        foreach ($this->index->stories($datasetKey) as $story) {
+            yield StoryDto::fromArray($story);
         }
     }
 
@@ -67,31 +67,5 @@ final class StoryFinder
         }
 
         return $stops;
-    }
-
-    /**
-     * $dataset is whatever FolioRegistry::datasets() returns (dataset-bundle's DatasetInfo, on the
-     * producer). Untyped here so this bundle does not require dataset-bundle: reader apps load it
-     * without the registry, and datasets() throws there before this is reached.
-     *
-     * @return iterable<StoryDto>
-     */
-    private function readStoryFile(object $dataset): iterable
-    {
-        // sourceFile()'s $core param is really just "which <core>.jsonl under norm/" -- 'story'
-        // works the same way 'obj' does for row content, even though a story isn't a row core.
-        // There's no _folio-enrichment stage for stories (nothing AI-claims-enriches a story
-        // document), so the "enriched" half of sourceFile() always misses and it falls through
-        // to the plain norm/story.jsonl check, which is exactly the lookup this needs.
-        $storyFile = $this->folioRegistry->sourceFile($dataset, 'story');
-        if ($storyFile === null) {
-            return;
-        }
-
-        foreach (JsonlReader::open($storyFile) as $story) {
-            if (\is_array($story) && isset($story['id'])) {
-                yield StoryDto::fromArray($story);
-            }
-        }
     }
 }

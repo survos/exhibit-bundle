@@ -6,6 +6,7 @@ namespace Survos\ExhibitBundle;
 
 use Survos\ExhibitBundle\Service\SiteFinder;
 use Survos\ExhibitBundle\Service\StoryFinder;
+use Survos\ExhibitBundle\Service\StoryIndex;
 use Survos\Kit\AbstractSurvosBundle;
 use Survos\Kit\SurvosKitBundle;
 use Survos\Kit\Traits\HasConfigurableRoutes;
@@ -38,6 +39,10 @@ final class SurvosExhibitBundle extends AbstractSurvosBundle
         parent::loadExtension($config, $container, $builder);
         $this->captureRouteConfig($config);
 
+        $container->services()
+            ->set(StoryIndex::class)
+            ->autowire()
+            ->autoconfigure();
         $container->services()
             ->set(StoryFinder::class)
             ->autowire()

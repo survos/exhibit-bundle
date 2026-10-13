@@ -20,9 +20,11 @@ canonical portable document is the Story Contract JSON document.
 ## Status
 
 Most of the above is still aspirational. Built so far: `GET /stories` and
-`GET /stories/{id}` (`StoryController`/`StoryFinder`), publishing whatever
-`norm/story.jsonl` documents already exist across every known dataset
-(currently: `md`'s Curatescape pipeline) — read-only, no persistence,
+`GET /stories/{id}` (`StoryController`/`StoryFinder`), plus `/sites`, publishing
+the `story` core of every local folio that has one (currently Harvest's
+Curatescape pipeline). `StoryIndex` learns which folios those are from
+harvest-bundle's catalog (each artifact's published `coreCounts`), so no folio
+is opened just to find out; requires survos/harvest-bundle. Read-only, no persistence,
 authoring, or projection adapters yet. This is the first real consumer:
 `survos-sites/sos`'s `rut` app fetching the available tour list instead of a
 hardcoded PHP source array (see survos-sites/sos#6).
