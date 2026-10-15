@@ -52,7 +52,7 @@ final class StoryIndex
             ->select('r')
             ->from(Row::class, 'r')
             ->where('r.core = :core')
-            ->setParameter('core', $folioCode . ':' . self::CORE)
+            ->setParameter('core', $folioCode.':'.self::CORE)
             ->getQuery()
             ->getResult();
 

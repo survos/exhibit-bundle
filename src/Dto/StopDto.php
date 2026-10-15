@@ -51,13 +51,13 @@ final class StopDto implements \JsonSerializable
     }
 
     /**
-     * @param array<string,mixed> $bookmark one entry from story.jsonl's bookmarks[]
+     * @param array<string,mixed> $bookmark  one entry from story.jsonl's bookmarks[]
      * @param array<string,mixed> $resources the story's resources{}, keyed by ref
      */
     public static function fromBookmark(array $bookmark, ?string $storyId, array $resources = []): self
     {
         $ref = isset($bookmark['ref']) ? (string) $bookmark['ref'] : null;
-        $resource = $ref !== null ? ($resources[$ref] ?? null) : null;
+        $resource = null !== $ref ? ($resources[$ref] ?? null) : null;
 
         return new self(
             id: (string) ($bookmark['id'] ?? ''),
@@ -85,6 +85,6 @@ final class StopDto implements \JsonSerializable
             'lat' => $this->lat,
             'lng' => $this->lng,
             'ordinal' => $this->ordinal,
-        ], static fn(mixed $v): bool => $v !== null);
+        ], static fn (mixed $v): bool => null !== $v);
     }
 }

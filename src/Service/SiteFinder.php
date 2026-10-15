@@ -62,6 +62,6 @@ final class SiteFinder
             'storyIds' => array_column($this->index->stories($folioCode), 'id'),
             // Not part of site.json itself -- SiteController::stories() scopes StoryFinder with it.
             'datasetKey' => $folioCode,
-        ], static fn (mixed $value): bool => $value !== null && $value !== []);
+        ], static fn (mixed $value): bool => null !== $value && [] !== $value);
     }
 }

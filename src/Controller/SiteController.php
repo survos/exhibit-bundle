@@ -43,7 +43,7 @@ final class SiteController
     public function show(string $code): JsonResponse
     {
         $site = $this->sites->find($code);
-        if ($site === null) {
+        if (null === $site) {
             throw new NotFoundHttpException(\sprintf('Site "%s" not found.', $code));
         }
 
@@ -55,7 +55,7 @@ final class SiteController
     public function stories(string $code): JsonResponse
     {
         $site = $this->sites->find($code);
-        if ($site === null) {
+        if (null === $site) {
             throw new NotFoundHttpException(\sprintf('Site "%s" not found.', $code));
         }
 

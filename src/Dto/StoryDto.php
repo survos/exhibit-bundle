@@ -56,7 +56,7 @@ final class StoryDto implements \JsonSerializable
         $credits = $this->raw['credits'] ?? [];
 
         return array_values(array_filter(array_map(
-            static fn(mixed $c): ?string => is_array($c) ? ($c['label'] ?? null) : (is_string($c) ? $c : null),
+            static fn (mixed $c): ?string => is_array($c) ? ($c['label'] ?? null) : (is_string($c) ? $c : null),
             is_array($credits) ? $credits : [],
         )));
     }
@@ -77,7 +77,7 @@ final class StoryDto implements \JsonSerializable
         }
 
         return array_values(array_map(
-            fn(array $block): StopDto => StopDto::fromBlock($block, $this->getId()),
+            fn (array $block): StopDto => StopDto::fromBlock($block, $this->getId()),
             $blocks,
         ));
     }
@@ -92,7 +92,7 @@ final class StoryDto implements \JsonSerializable
         }
 
         return array_values(array_map(
-            fn(array $bookmark): StopDto => StopDto::fromBookmark($bookmark, $this->getId(), is_array($resources) ? $resources : []),
+            fn (array $bookmark): StopDto => StopDto::fromBookmark($bookmark, $this->getId(), is_array($resources) ? $resources : []),
             $bookmarks,
         ));
     }

@@ -60,7 +60,7 @@ final class StoryController
     public function show(string $id): JsonResponse
     {
         $story = $this->stories->find($id);
-        if ($story === null) {
+        if (null === $story) {
             return new JsonResponse(['error' => \sprintf('Story "%s" not found.', $id)], 404);
         }
 

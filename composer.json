@@ -1,24 +1,24 @@
 {
-  "name": "survos/exhibit-bundle",
-  "description": "Symfony integration for authoring and publishing Story Contract exhibit stories.",
-  "type": "symfony-bundle",
-  "license": "MIT",
-  "require": {
-    "php": ">=8.4",
-    "symfony/framework-bundle": "^6.4 || ^7.0 || ^8.0",
-    "survos/kit-bundle": "^2.5",
-    "survos/data-contracts": "^2.36",
-    "survos/folio-bundle": "^2.37",
-    "survos/harvest-bundle": "^2.41.2"
-  },
-  "autoload": {
-    "psr-4": {
-      "Survos\\ExhibitBundle\\": "src/"
+    "name": "survos/exhibit-bundle",
+    "description": "Symfony integration for authoring and publishing Story Contract exhibit stories.",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "require": {
+        "php": "^8.5",
+        "symfony/framework-bundle": "^8.1",
+        "survos/kit-bundle": "^2.5",
+        "survos/data-contracts": "^2.5",
+        "survos/folio-bundle": "^2.37.3",
+        "survos/harvest-bundle": "^2.41.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Survos\\ExhibitBundle\\": "src/"
+        }
+    },
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        }
     }
-  },
-  "extra": {
-    "symfony": {
-      "allow-contrib": true
-    }
-  }
 }
