@@ -9,7 +9,7 @@
     "survos/kit-bundle": "^2.5",
     "survos/data-contracts": "^2.36",
     "survos/folio-bundle": "^2.37",
-    "survos/harvest-bundle": "^2.38"
+    "survos/harvest-bundle": "^2.41.2"
   },
   "autoload": {
     "psr-4": {
