@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Survos\ExhibitBundle\Service;
 
+use Survos\DataContracts\Vocabulary\Core;
 use Survos\FolioBundle\Entity\Folio;
 use Survos\FolioBundle\Entity\Row;
 use Survos\FolioBundle\Service\FolioService;
 use Survos\HarvestBundle\Catalog\HarvestCatalog;
 
 /**
- * Which local folios carry a `story` core, and their story rows.
+ * Which local folios carry a `tour` core, and the story.v1 documents on its rows.
  *
- * Stories are ordinary folio rows (dto_type "story", core "story"): Harvest's story-normalize
- * writes norm/story.jsonl and folio:build ingests it like any other core, so a reader app that
- * holds the folio already holds its stories -- no dataset registry, no separate artifact.
+ * Stories are the story.v1 view of ordinary folio tour rows (core "tour", Core::TOUR): Harvest
+ * writes norm/tour.jsonl with the story.v1 document on each row and folio:build ingests it like any
+ * other core, so a reader app that holds the folio already holds its stories -- no dataset registry, no separate artifact.
  *
  * Which folios have one comes from harvest-bundle's catalog (each artifact's published
  * coreCounts), never from opening folio files: a hub holds thousands of folios and a handful
@@ -22,7 +23,7 @@ use Survos\HarvestBundle\Catalog\HarvestCatalog;
  */
 final class StoryIndex
 {
-    public const string CORE = 'story';
+    public const string CORE = Core::TOUR;
 
     /** Pipeline bookkeeping folio ingest adds to dto_data; not part of a story.v1 document. */
     private const array PIPELINE_FIELDS = ['stage', 'source', 'pageCount'];
@@ -36,7 +37,7 @@ final class StoryIndex
     ) {
     }
 
-    /** @return list<string> folio codes (provider/dataset) that have a story core */
+    /** @return list<string> folio codes (provider/dataset) that have a tour core */
     public function folioCodes(): array
     {
         return $this->codes ??= array_values(array_filter(
@@ -59,7 +60,9 @@ final class StoryIndex
         $stories = [];
         foreach ($rows as $row) {
             $story = array_diff_key(($row->dtoData ?? []) + ($row->extras ?? []), array_flip(self::PIPELINE_FIELDS));
-            if (isset($story['id'])) {
+            // A tour row carries a story.v1 document only when its producer wrote one (Curatescape,
+            // Chijal); a tour that is only links and a stops[] summary (AIC) has no blocks to serve.
+            if (isset($story['id'], $story['blocks'])) {
                 $stories[] = $story;
             }
         }
